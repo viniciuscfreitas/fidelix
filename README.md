@@ -119,20 +119,6 @@ petpoints-backend/
 └── tests/                # Testes automatizados
 ```
 
-## Estratégia de Expansão e Escalabilidade
-
-1. **Fase Inicial – Lançamento Local**: Foco em um piloto com pet shops de uma cidade específica.
-2. **Fase 2 – Regionalização**: Expandir para outras cidades com parcerias locais.
-3. **Fase 3 – Expansão Nacional**: Ampliar para todas as principais regiões do país.
-4. **Fase 4 – Internacionalização**: Adaptação para mercados internacionais.
-
-## Indicadores de Sucesso (KPIs)
-
-- **Taxa de Adoção**: Medir o número de pet shops ativos.
-- **Crescimento de Assinaturas**: Acompanhar o número de assinaturas de produtos.
-- **Taxa de Retenção de Clientes**: Monitorar o uso contínuo após 6 e 12 meses.
-- **Ticket Médio por Cliente**: Avaliar o valor médio gasto.
-
 ## Licença
 
 Este projeto é licenciado sob a [MIT License](LICENSE).
