@@ -1,5 +1,6 @@
 // src/app.ts
 import express from 'express';
+import { setupSwagger } from './config/swaggerConfig';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
@@ -27,8 +28,14 @@ const io = new Server(server, {
     }
 });
 
+// Configurações do middleware
 app.use(cors());
 app.use(express.json());
+
+// Configuração do Swagger
+setupSwagger(app);
+
+// Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/delivery', deliveryRoutes);
@@ -43,6 +50,7 @@ app.use('/api/marketing', marketingRoutes);
 // Tornar o io acessível em todos os controladores
 app.set('io', io);
 
+// Eventos de conexão do Socket.io
 io.on('connection', (socket) => {
     console.log('Cliente conectado:', socket.id);
 
@@ -51,7 +59,13 @@ io.on('connection', (socket) => {
     });
 });
 
+// Iniciar o servidor
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    server.listen(PORT, () => {
+        console.log(`Servidor rodando na porta ${PORT}`);
+    });
+}
+
+export { server };
+export default app;

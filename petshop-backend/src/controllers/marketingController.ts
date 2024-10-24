@@ -89,33 +89,33 @@ export const registerCampaignForSegment = async (req: Request, res: Response) =>
     const { campaignName, customerIds } = req.body;
 
     try {
-        // Verificar se já existe uma campanha para esses clientes
-        const existingRegistrations = await CampaignRegistration.findAll({
+        // Verificar se os clientes já estão registrados na campanha
+        const alreadyRegistered = await CampaignRegistration.findAll({
             where: {
                 campaignName,
-                customerId: { [Op.in]: customerIds }
-            },
-            attributes: ['customerId']
+                customerId: customerIds
+            }
         });
 
+        const alreadyRegisteredIds = alreadyRegistered.map(reg => reg.customerId);
+
         // Filtrar os clientes que ainda não estão registrados
-        const alreadyRegisteredIds = existingRegistrations.map(reg => reg.customerId);
         const newCustomerIds = customerIds.filter((id: number) => !alreadyRegisteredIds.includes(id));
 
-        // Registrar apenas os clientes que ainda não estão na campanha
-        if (newCustomerIds.length > 0) {
-            const campaignRegistrations = await CampaignRegistration.bulkCreate(
-                newCustomerIds.map((customerId: number) => ({
-                    customerId,
-                    campaignName,
-                    registeredAt: new Date(),
-                }))
-            );
-
-            res.status(200).json({ message: 'Campanha registrada com sucesso', campaignRegistrations });
-        } else {
-            res.status(400).json({ message: 'Todos os clientes já estão registrados nesta campanha' });
+        if (newCustomerIds.length === 0) {
+            return res.status(400).json({ message: 'Todos os clientes já estão registrados nesta campanha' });
         }
+
+        // Registrar os novos clientes na campanha
+        const campaignRegistrations = await CampaignRegistration.bulkCreate(
+            newCustomerIds.map((customerId: number) => ({
+                customerId,
+                campaignName,
+                registeredAt: new Date(),
+            }))
+        );
+
+        res.status(200).json({ message: 'Campanha registrada com sucesso', campaignRegistrations });
     } catch (error) {
         console.error('Erro ao registrar campanha:', error);
         res.status(500).json({ error: 'Erro ao registrar campanha' });

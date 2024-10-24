@@ -11,39 +11,38 @@ class Subscription extends Model {
     public status!: string;
 }
 
-Subscription.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
-        customerId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-        productId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-        frequency: {
-            type: DataTypes.ENUM('semanal', 'mensal', 'bimestral'),
-            allowNull: false,
-        },
-        nextDeliveryDate: {
-            type: DataTypes.DATE,
-            allowNull: false,
-        },
-        status: {
-            type: DataTypes.STRING,
-            defaultValue: 'Ativa',
-        },
+Subscription.init({
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
     },
-    {
-        sequelize,
-        modelName: 'Subscription',
-        tableName: 'Subscriptions',
-    }
-);
+    customerId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    productId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    frequency: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    nextDeliveryDate: {
+        type: DataTypes.DATE,
+        allowNull: false,
+    },
+    status: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'Ativa',
+    },
+}, {
+    sequelize,
+    modelName: 'Subscription',
+    tableName: 'Subscriptions',
+    timestamps: true,
+});
 
 export default Subscription;

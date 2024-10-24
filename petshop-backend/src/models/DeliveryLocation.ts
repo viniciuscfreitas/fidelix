@@ -7,6 +7,8 @@ class DeliveryLocation extends Model {
     public deliveryId!: number;
     public latitude!: number;
     public longitude!: number;
+    public createdAt!: Date; // Adicionar a propriedade createdAt
+    public updatedAt!: Date; // Adicionar a propriedade updatedAt
 }
 
 DeliveryLocation.init(
@@ -33,6 +35,7 @@ DeliveryLocation.init(
         sequelize,
         modelName: 'DeliveryLocation',
         tableName: 'DeliveryLocations',
+        timestamps: true, // Habilitar automaticamente os campos createdAt e updatedAt
     }
 );
 

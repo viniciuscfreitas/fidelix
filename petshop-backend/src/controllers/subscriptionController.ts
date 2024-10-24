@@ -7,6 +7,11 @@ import { addPoints, redeemPoints } from './loyaltyController';
 export const createSubscription = async (req: Request, res: Response) => {
     const { customerId, productId, frequency, nextDeliveryDate } = req.body;
 
+    // Verificar se todos os campos obrigatórios estão presentes
+    if (!customerId || !productId || !frequency || !nextDeliveryDate) {
+        return res.status(400).json({ error: 'Todos os campos obrigatórios devem ser informados: customerId, productId, frequency, nextDeliveryDate' });
+    }
+
     try {
         const newSubscription = await Subscription.create({
             customerId,
@@ -15,17 +20,14 @@ export const createSubscription = async (req: Request, res: Response) => {
             nextDeliveryDate,
             status: 'Ativa'
         });
+
         // Adicionar pontos automaticamente ao criar a assinatura
         await addPoints({ body: { customerId, points: 50 } } as Request, res);
 
         res.status(201).json({ message: 'Assinatura criada com sucesso e pontos adicionados', subscription: newSubscription });
     } catch (error) {
-        let errorMessage = 'Erro ao criar assinatura';
-        if (error instanceof Error) {
-            errorMessage += `: ${error.message}`;
-        }
-        console.error(errorMessage, error);
-        res.status(500).json({ error: errorMessage });
+        console.error('Erro ao criar assinatura:', error);
+        res.status(500).json({ error: 'Erro ao criar assinatura' });
     }
 };
 
@@ -48,6 +50,10 @@ export const cancelSubscription = async (req: Request, res: Response) => {
         const subscription = await Subscription.findByPk(id);
         if (!subscription) {
             return res.status(404).json({ error: 'Assinatura não encontrada' });
+        }
+
+        if (subscription.status !== 'Ativa') {
+            return res.status(400).json({ error: 'Somente assinaturas ativas podem ser canceladas' });
         }
 
         subscription.status = 'Cancelada';

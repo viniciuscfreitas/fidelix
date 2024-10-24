@@ -2,13 +2,18 @@
 import { Request, Response } from 'express';
 import Product from '../models/Product';
 
-// Função para criar um produto
+// Função para criar um novo produto
 export const createProduct = async (req: Request, res: Response) => {
-    const { name, description, price, stock } = req.body;
+    const { name, price, stock, category, description } = req.body;
+
+    // Verificação de campos obrigatórios
+    if (!name || !price || stock === undefined) {
+        return res.status(400).json({ error: 'Nome, preço e estoque são obrigatórios.' });
+    }
 
     try {
-        const newProduct = await Product.create({ name, description, price, stock });
-        res.status(201).json({ message: 'Produto criado com sucesso', product: newProduct });
+        const product = await Product.create({ name, price, stock, category, description });
+        res.status(201).json({ message: 'Produto criado com sucesso', product });
     } catch (error) {
         console.error('Erro ao criar produto:', error);
         res.status(500).json({ error: 'Erro ao criar produto' });
@@ -29,7 +34,12 @@ export const getAllProducts = async (req: Request, res: Response) => {
 // Função para atualizar um produto
 export const updateProduct = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { name, description, price, stock } = req.body;
+    const { name, price, stock, category, description } = req.body;
+
+    // Verificação de campos obrigatórios
+    if (stock === undefined) {
+        return res.status(400).json({ error: 'O campo de estoque é obrigatório.' });
+    }
 
     try {
         const product = await Product.findByPk(id);
@@ -37,12 +47,7 @@ export const updateProduct = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'Produto não encontrado' });
         }
 
-        product.name = name;
-        product.description = description;
-        product.price = price;
-        product.stock = stock;
-        await product.save();
-
+        await product.update({ name, price, stock, category, description });
         res.status(200).json({ message: 'Produto atualizado com sucesso', product });
     } catch (error) {
         console.error('Erro ao atualizar produto:', error);

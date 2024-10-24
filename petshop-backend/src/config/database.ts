@@ -11,7 +11,7 @@ const sequelize = new Sequelize(
         host: process.env.DB_HOST || 'localhost', // Host do banco de dados
         port: Number(process.env.DB_PORT) || 5432, // Porta do banco de dados
         dialect: 'postgres', // Dialeto do banco de dados
-        logging: console.log, // Habilitar logs para depuração
+        logging: false, // Habilitar logs para depuração
     }
 );
 

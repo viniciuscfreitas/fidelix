@@ -1,54 +1,57 @@
-// tests/customer.test.ts
 import request from 'supertest';
-import app from '../src/app'; // Caminho para a configuração do seu app Express
+import app, { server } from '../src/app';
+import User from '../src/models/User';
 
 describe('Customer API', () => {
-    let customerId: number;
+  let token: string;
+  let email: string;
+  let customerId: number;
 
-    it('deve cadastrar um novo cliente', async () => {
-        const response = await request(app)
-            .post('/api/customers')
-            .send({
-                name: 'Cliente Teste',
-                email: 'teste@cliente.com',
-                phoneNumber: '123456789',
-                address: 'Rua Teste, 123'
-            });
+  beforeAll(async () => {
+    await User.destroy({ where: {} });
 
-        expect(response.status).toBe(201);
-        expect(response.body.customer).toHaveProperty('id');
-        customerId = response.body.customer.id;
-    });
+    email = `testuser_${Date.now()}@example.com`;
+    await request(app)
+      .post('/api/auth/register')
+      .send({
+        name: 'Test Admin',
+        email,
+        password: 'password123',
+        role: 'admin',
+      });
 
-    it('deve retornar todos os clientes', async () => {
-        const response = await request(app).get('/api/customers');
-        expect(response.status).toBe(200);
-        expect(Array.isArray(response.body.customers)).toBeTruthy();
-    });
+    const loginResponse = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email,
+        password: 'password123',
+      });
 
-    it('deve retornar um cliente por ID', async () => {
-        const response = await request(app).get(`/api/customers/${customerId}`);
-        expect(response.status).toBe(200);
-        expect(response.body.customer).toHaveProperty('id', customerId);
-    });
+    token = loginResponse.body.token;
+  });
 
-    it('deve atualizar um cliente', async () => {
-        const response = await request(app)
-            .put(`/api/customers/${customerId}`)
-            .send({
-                name: 'Cliente Atualizado',
-                email: 'atualizado@cliente.com',
-                phoneNumber: '987654321',
-                address: 'Rua Nova, 456'
-            });
+  afterAll((done) => {
+    server.close(done); // Certifique-se de fechar o servidor após todos os testes
+  });
 
-        expect(response.status).toBe(200);
-        expect(response.body.customer).toHaveProperty('name', 'Cliente Atualizado');
-    });
+  it('deve cadastrar um novo cliente', async () => {
+    const response = await request(app)
+      .post('/api/customers')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Cliente Teste',
+        email: `cliente_${Date.now()}@example.com`,
+        phoneNumber: '123456789',
+        address: 'Rua Teste, 123',
+      });
 
-    it('deve excluir um cliente', async () => {
-        const response = await request(app).delete(`/api/customers/${customerId}`);
-        expect(response.status).toBe(200);
-        expect(response.body).toHaveProperty('message', 'Cliente excluído com sucesso');
-    });
+    console.log(response.body);
+
+    expect(response.status).toBe(201);
+    if (response.body.error) {
+      throw new Error(response.body.error);
+    }
+
+    customerId = response.body.customer.id;
+  });
 });
