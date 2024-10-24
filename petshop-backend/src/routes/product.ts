@@ -9,9 +9,15 @@ import {
 } from '../controllers/productController';
 import { check, validationResult } from 'express-validator';
 import { authorize } from '../middleware/authorization';
+import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
 
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Muitas requisições, por favor tente novamente mais tarde.'
+});
 /**
  * Middleware to validate request data and send errors if validation fails.
  */

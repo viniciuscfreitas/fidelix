@@ -8,6 +8,7 @@ class User extends Model {
     public email!: string;
     public password!: string;
     public role!: string; // Novo campo para o papel do usuário
+    public active!: boolean; // Novo campo para indicar se o usuário está ativo
 }
 
 User.init(

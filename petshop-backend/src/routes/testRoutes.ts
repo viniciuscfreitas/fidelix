@@ -3,9 +3,16 @@ import express from 'express';
 import { simulateAddPoints } from '../controllers/testController';
 import { authorize } from '../middleware/authorization';
 import { validate } from '../middleware/validate';
+import rateLimit from 'express-rate-limit';
 import { check } from 'express-validator';
 
 const router = express.Router();
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Muitas requisições, por favor tente novamente mais tarde.'
+});
 
 /**
  * @swagger

@@ -3,9 +3,16 @@ import express, { Request, Response, NextFunction } from 'express';
 import { addPoints, redeemPoints, getCustomerLoyaltyPoints, getAllLoyaltyPoints } from '../controllers/loyaltyController';
 import { check, validationResult } from 'express-validator';
 import { asyncHandler } from '../utils/asyncHandler';
+import rateLimit from 'express-rate-limit';
 import { authorize } from '../middleware/authorization';
 
 const router = express.Router();
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Muitas requisições, por favor tente novamente mais tarde.'
+});
 
 /**
  * @swagger

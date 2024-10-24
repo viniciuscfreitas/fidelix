@@ -4,10 +4,17 @@ import { check } from 'express-validator';
 import { asyncHandler } from '../utils/asyncHandler'; // Correção da importação
 import { validate } from '../middleware/validate';
 import User from '../models/User'; // Importação padrão corrigida
-import { registerUser, loginUser } from '../controllers/authController';
+import { authorize } from '../middleware/authorization'; // Middleware de autorização
+import rateLimit from 'express-rate-limit';
+import { registerUser, loginUser, deleteUser } from '../controllers/authController';
 
 const router = express.Router();
 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Muitas requisições, por favor tente novamente mais tarde.'
+});
 /**
  * @swagger
  * /auth/register:
@@ -111,14 +118,19 @@ router.post(
  */
 router.delete(
   '/delete-user',
+  authorize(['admin']), // Apenas administradores podem deletar usuários
   validate([
     check('email').isEmail().withMessage('O e-mail deve ser válido'),
   ]),
   asyncHandler(async (req: express.Request, res: express.Response) => {
     const { email } = req.body;
     try {
-      await User.destroy({ where: { email } });
-      res.status(200).send({ message: 'Usuário deletado com sucesso' });
+      const userDeleted = await User.destroy({ where: { email } });
+      if (userDeleted) {
+        res.status(200).send({ message: 'Usuário deletado com sucesso' });
+      } else {
+        res.status(404).send({ error: 'Usuário não encontrado' });
+      }
     } catch (error) {
       res.status(500).send({ error: 'Erro ao deletar o usuário' });
     }

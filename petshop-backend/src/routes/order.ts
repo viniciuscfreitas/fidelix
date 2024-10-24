@@ -11,8 +11,15 @@ import {
 import { check, validationResult } from 'express-validator';
 import { authorize } from '../middleware/authorization';
 import { asyncHandler } from '../utils/asyncHandler';
+import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Muitas requisições, por favor tente novamente mais tarde.'
+});
 
 /**
  * @swagger

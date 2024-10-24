@@ -4,7 +4,15 @@ import { createSubscription, getAllSubscriptions, cancelSubscription, renewSubsc
 import { asyncHandler } from '../utils/asyncHandler';
 import { check } from 'express-validator';
 import { validate } from '../middleware/validate';
+import rateLimit from 'express-rate-limit';
+
 const router = express.Router();
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Muitas requisições, por favor tente novamente mais tarde.'
+});
 
 /**
  * @swagger

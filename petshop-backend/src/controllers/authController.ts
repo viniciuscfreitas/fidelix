@@ -9,18 +9,23 @@ const JWT_SECRET = process.env.JWT_SECRET || 'defaultsecret';
 // Função para registrar um novo usuário
 export const registerUser = async (req: Request, res: Response) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role = 'user' } = req.body; // Define "user" como valor padrão para role
 
-        // Verifica se o usuário já existe
-        const existingUser = await User.findOne({ where: { email } });
-        if (existingUser) {
-            return res.status(400).json({ error: 'Email já está em uso' });
+        // Validação básica
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
         }
 
-        // Criptografa a senha
+        // Verificar se o e-mail já está em uso
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ error: 'E-mail já está em uso' });
+        }
+
+        // Criptografar a senha
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Cria um novo usuário
+        // Criar o usuário
         const newUser = await User.create({
             name,
             email,
@@ -38,6 +43,7 @@ export const registerUser = async (req: Request, res: Response) => {
             },
         });
     } catch (error) {
+        console.error('Erro ao registrar o usuário:', error);
         res.status(500).json({ error: 'Erro ao registrar o usuário' });
     }
 };
@@ -72,5 +78,32 @@ export const loginUser = async (req: Request, res: Response) => {
         });
     } catch (error) {
         res.status(500).json({ error: 'Erro ao fazer login' });
+    }
+};
+
+// Função para deletar ou desativar um usuário
+export const deleteUser = async (req: Request, res: Response) => {
+    try {
+        const userId = req.params.id;
+        const { action } = req.body; // 'delete' ou 'deactivate'
+
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        if (action === 'delete') {
+            await user.destroy();
+            return res.status(200).json({ message: 'Usuário deletado com sucesso' });
+        } else if (action === 'deactivate') {
+            user.active = false; // Supondo que exista um campo 'active' na tabela de usuários
+            await user.save();
+            return res.status(200).json({ message: 'Usuário desativado com sucesso' });
+        } else {
+            return res.status(400).json({ error: 'Ação inválida' });
+        }
+    } catch (error) {
+        console.error('Erro ao deletar ou desativar usuário:', error);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
     }
 };
